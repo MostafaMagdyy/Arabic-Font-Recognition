@@ -38,13 +38,11 @@ def remove_noise22(image, dilation_kernel=None):
 
 def extract_sift_features(image):
     sift = cv2.SIFT_create()
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    keypoints, descriptors = sift.detectAndCompute(gray_image, None)
+    keypoints, descriptors = sift.detectAndCompute(image, None)
     return descriptors
 
 def test(directory, kmeans_model_filename, svm_model_filename):
     # Load the KMeans model
-    print(os.getcwd())
     with open(kmeans_model_filename, 'rb') as file:
         loaded_kmeans_model = pickle.load(file)
     
@@ -54,21 +52,26 @@ def test(directory, kmeans_model_filename, svm_model_filename):
 
     test_histograms = []
     
-    # Iterate over sorted files in the directory
-    file_list = sorted(os.listdir(directory))
-    for file_name in file_list:
-        input_image_path = os.path.join(directory, file_name)
+    # Iterate over subdirectories in the given directory
+    for subdir in os.listdir(directory):
+        subdir_path = os.path.join(directory, subdir)
         
-        # Apply preprocessing (remove noise)
-        image = io.imread(input_image_path)
-        preprocessed_image = remove_noise22(image,dilation_kernel=None)
-        cv2.imshow("one",preprocessed_image)
-        descriptors = extract_sift_features(preprocessed_image)
-        if descriptors is not None and descriptors.shape[0] > 0 and descriptors.shape[1] > 0:
-            nearest_clusters = pairwise_distances_argmin_min(descriptors, loaded_kmeans_model.cluster_centers_)[0]
-            histogram, _ = np.histogram(nearest_clusters, bins=np.arange(loaded_kmeans_model.n_clusters + 1))
-            test_histograms.append((histogram, file_name))  # Assuming filename is the label
-    
+        # Check if the item in the directory is a subdirectory
+        if os.path.isdir(subdir_path):
+            # Iterate over sorted files in the subdirectory
+            file_list = sorted(os.listdir(subdir_path))
+            for file_name in file_list:
+                input_image_path = os.path.join(subdir_path, file_name)
+                print(input_image_path)
+                # Apply preprocessing (remove noise)
+                image = io.imread(input_image_path)
+                preprocessed_image = remove_noise22(image, dilation_kernel=None)
+                descriptors = extract_sift_features(preprocessed_image)
+                if descriptors is not None and descriptors.shape[0] > 0 and descriptors.shape[1] > 0:
+                    nearest_clusters = pairwise_distances_argmin_min(descriptors, loaded_kmeans_model.cluster_centers_)[0]
+                    histogram, _ = np.histogram(nearest_clusters, bins=np.arange(loaded_kmeans_model.n_clusters + 1))
+                    test_histograms.append((histogram, subdir))  # Use subdir as the label
+                
     X_test = [histogram for histogram, _ in test_histograms]
     y_test = [label for _, label in test_histograms]
     
