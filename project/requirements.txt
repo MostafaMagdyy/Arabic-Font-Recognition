@@ -1,0 +1,8 @@
+gunicorn
+flask
+os
+cv2
+numpy
+pickle
+sklearn.metrics 
+skimage.io
