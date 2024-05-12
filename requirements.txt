@@ -1,6 +1,5 @@
 gunicorn
 flask
-os
 cv2
 numpy
 pickle
