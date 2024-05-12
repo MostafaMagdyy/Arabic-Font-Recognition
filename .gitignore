@@ -161,4 +161,4 @@ cython_debug/
 
 /project/fonts-dataset
 /project/fonts_processed-dataset
-/project/test
+/project/tests
