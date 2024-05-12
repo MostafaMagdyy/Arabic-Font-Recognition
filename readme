@@ -1,0 +1,18 @@
+!!!Feature Extraction methods suggested:
+1-SIFT(Rotation Invariant) 
+2-HOG - SPM
+3-LBP
+4-Gabor Filters
+5-Combbination 
+---- we can use a combination between methods but we must be carefull for the biasing the could happen 
+----if we are going to use multiple methods then we need to combine them into a single feature vector 
+
+
+!!!preprcessing:
+Text alignment • Text color
+• Text size/weight • Text rotation
+• Image blur • Salt and pepper noise
+• Brightness variation
+
+we are going to use SIFT 
+
