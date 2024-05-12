@@ -1,7 +1,6 @@
 gunicorn
-flask
-cv2
+Flask
+opencv-python
 numpy
-pickle
-sklearn.metrics 
-skimage.io
+scikit-learn
+scikit-image
