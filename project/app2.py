@@ -1,14 +1,10 @@
-from flask import Flask, request, jsonify
 import os
 import cv2
 import numpy as np
 import pickle
+import skimage.io as io
 from sklearn.metrics.pairwise import pairwise_distances_argmin_min
 from sklearn.metrics import accuracy_score
-import skimage.io as io
-
-app = Flask(__name__)
-
 def unsharp_masking(image, blur_radius=5, sharpen_amount=1.0):
     """Apply unsharp masking followed by dilation to enhance image details."""
     # Apply Gaussian blur
@@ -41,20 +37,20 @@ def extract_sift_features(image):
     sift = cv2.SIFT_create()
     keypoints, descriptors = sift.detectAndCompute(image, None)
     return descriptors
-
-def test(image):
+def test_single_image(image_path, kmeans_model_filename, svm_model_filename):
     # Load the KMeans model
-    with open("kmeans_model.pkl", 'rb') as file:
+    with open(kmeans_model_filename, 'rb') as file:
         loaded_kmeans_model = pickle.load(file)
     
     # Load the SVM model
-    with open("svm_model.pkl", 'rb') as file:
+    with open(svm_model_filename, 'rb') as file:
         loaded_svm_model = pickle.load(file)
 
-    histogram = []
+    # Load and preprocess the image
+    image = io.imread(image_path)
     preprocessed_image = remove_noise22(image)
     descriptors = extract_sift_features(preprocessed_image)
-    # y_pred = loaded_svm_model.predict([histogram])
+
     if descriptors is not None and descriptors.shape[0] > 0 and descriptors.shape[1] > 0:
         nearest_clusters = pairwise_distances_argmin_min(descriptors, loaded_kmeans_model.cluster_centers_)[0]
         histogram, _ = np.histogram(nearest_clusters, bins=np.arange(loaded_kmeans_model.n_clusters + 1))
@@ -62,24 +58,9 @@ def test(image):
         # Predict using the SVM model
         y_pred = loaded_svm_model.predict([histogram])
         print("Prediction:", y_pred)
-        return y_pred.tolist()
-    
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Check if request contains an image
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image found in request.'}), 400
-    
-    # Read the image from the request
-    image_file = request.files['image']
-    image = cv2.imdecode(np.frombuffer(image_file.read(), np.uint8), cv2.IMREAD_COLOR)
-    
-    # Call the test function to make predictions
-    prediction = test(image)
-    print("prediction is",prediction)
-    print(type(prediction))
-    return jsonify({'prediction': prediction})
+image_path = ".\\content\\test\\Lemonada\\1.jpeg"
+kmeans_model_filename = ".\\kmeans_model.pkl"
+svm_model_filename = ".\\svm_model.pkl"
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+test_single_image(image_path, kmeans_model_filename, svm_model_filename)

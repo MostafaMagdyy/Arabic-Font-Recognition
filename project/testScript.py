@@ -79,7 +79,7 @@ def test(directory, kmeans_model_filename, svm_model_filename):
     accuracy = accuracy_score(y_test, y_pred)
     print("Accuracy:", accuracy)
 
-directory = "tests"
+directory = "test\IBM Plex Sans Arabic"
 kmeans_model_filename = "kmeans_model.pkl"
 svm_model_filename = "svm_model.pkl"
 test(directory, kmeans_model_filename, svm_model_filename)
